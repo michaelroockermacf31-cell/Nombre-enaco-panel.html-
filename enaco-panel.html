@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Control ENACO</title>
+<meta name="theme-color" content="#1a3a52">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#333;max-width:900px;margin:0 auto;padding:15px}
+.header{background:linear-gradient(135deg,#1a3a52,#2c5f8a);color:#fff;padding:22px;border-radius:12px;text-align:center;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:6px}.header p{font-size:13px;opacity:.9}
+.card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-bottom:16px}
+.card h2{color:#1a3a52;margin-bottom:12px;font-size:19px;border-bottom:3px solid #e74c3c;padding-bottom:6px}
+.fg{margin-bottom:12px}.fg label{display:block;font-weight:600;margin-bottom:4px;color:#555;font-size:14px}
+input,select{width:100%;padding:11px;border:1.5px solid #ddd;border-radius:6px;font-size:15px}
+input:focus,select:focus{outline:none;border-color:#2c5f8a}
+.rg{display:flex;gap:10px;margin-bottom:12px}.rg label{flex:1;padding:11px;border:2px solid #ddd;border-radius:6px;text-align:center;cursor:pointer;font-weight:600}
+.rg input{display:none}.rg input:checked+label{background:#2c5f8a;color:#fff;border-color:#2c5f8a}
+button{padding:13px 20px;border:0;border-radius:6px;cursor:pointer;font-size:16px;font-weight:600;margin:4px 0}
+.bp{background:#27ae60;color:#fff;width:100%}.bs{background:#2980b9;color:#fff;width:100%}.bd{background:#e74c3c;color:#fff}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+th{background:#1a3a52;color:#fff;padding:10px;text-align:left}td{padding:9px;border-bottom:1px solid #eee}
+.badge{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;display:inline-block}
+.ok{background:#d4edda;color:#155724}.al{background:#f8d7da;color:#721c24}.am{background:#fff3cd;color:#856404}
+.box{padding:13px;border-radius:8px;margin:12px 0;font-weight:600}
+.box.ok{background:#d4edda;color:#155724;border-left:4px solid #28a745}.box.danger{background:#f8d7da;color:#721c24;border-left:4px solid #dc3545}.box.warn{background:#fff3cd;color:#856404;border-left:4px solid #ffc107}
+.tot{background:linear-gradient(135deg,#fff3cd,#ffeaa7);padding:18px;border-radius:8px;margin-top:16px}.tot div{margin:6px 0}
+.hidden{display:none}
+.st{font-size:16px;font-weight:700;color:#2c5f8a;margin:14px 0 8px;padding-left:10px;border-left:4px solid #2c5f8a}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:12px 0}
+.dia{padding:10px 0;border:2px solid #ddd;border-radius:6px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;background:#fff}
+.dia.trabajado{background:#d4edda;border-color:#28a745;color:#155724}.dia.licencia{background:#fff3cd;border-color:#ffc107;color:#856404}
+.dia.feriado{background:#d1ecf1;border-color:#17a2b8;color:#0c5460}.dia.ausencia{background:#f8d7da;border-color:#dc3545;color:#721c24}
+.ley{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0;font-size:12px}.ley span{display:flex;align-items:center;gap:5px}.ley i{width:18px;height:18px;border-radius:4px;display:inline-block}
+.calc{background:#f8f9fa;padding:14px;border-radius:8px;margin-top:12px}.calc div{display:flex;justify-content:space-between;gap:10px;margin:4px 0;font-size:14px}
+.calc .f{font-weight:700;border-top:2px solid #ddd;padding-top:8px;margin-top:8px}.calc small{color:#666}
+details summary{cursor:pointer;font-weight:700;color:#1a3a52}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+</style>
+</head>
+<body>
+<div class="header"><h1>🏗️ PANEL DE CONTROL ENACO</h1><p>Validación documental y cálculo referencial de pagos</p></div>
+<div id="avisoParams"></div>
+
+<div class="card">
+<details id="dParams">
+<summary>⚙️ Parámetros del mes y del año (UTM, UF, retenciones)</summary>
+<p style="font-size:13px;color:#666;margin:8px 0">Estos valores cambian cada mes o cada año. Ingrésalos una vez y quedan guardados. Fuentes: SII (UTM y tabla de impuesto), Previred/AFP (UF, tope imponible, comisión).</p>
+<div class="two">
+<div class="fg"><label>UTM del mes ($)</label><input type="number" id="pUTM" inputmode="decimal"></div>
+<div class="fg"><label>UF del mes ($)</label><input type="number" id="pUF" inputmode="decimal"></div>
+<div class="fg"><label>Tope imponible AFP/Salud (UF)</label><input type="number" id="pTope" inputmode="decimal" step="0.1"></div>
+<div class="fg"><label>Comisión AFP por defecto (%)</label><input type="number" id="pCom" inputmode="decimal" step="0.01"></div>
+<div class="fg"><label>Jornada semanal (horas)</label><input type="number" id="pJor" inputmode="decimal"></div>
+<div class="fg"><label>Recargo horas extras especiales (%)</label><input type="number" id="pRec" inputmode="decimal"></div>
+<div class="fg"><label>Retención boleta honorarios (%)</label><input type="number" id="pRet" inputmode="decimal" step="0.01"></div>
+<div class="fg"><label>IVA (%)</label><input type="number" id="pIVA" inputmode="decimal"></div>
+<div class="fg"><label>Sueldo mínimo mensual ($, opcional)</label><input type="number" id="pMin" inputmode="decimal"></div>
+</div>
+</details>
+</div>
+
+<div class="card" id="formCard">
+<h2>📝 Registrar Nuevo Pago</h2>
+<div class="fg"><label>Tipo de Entidad:</label>
+<div class="rg"><input type="radio" name="tipo" id="tipoInterno" value="interno" checked><label for="tipoInterno">👷 Trabajador Interno</label>
+<input type="radio" name="tipo" id="tipoExterno" value="externo"><label for="tipoExterno">🏢 Subcontrato</label></div></div>
+
+<div id="camposInterno">
+<div class="fg"><label>Nombre del Trabajador:</label><input type="text" id="nombreInterno" placeholder="Nombre completo"></div>
+<div class="fg"><label>RUT:</label><input type="text" id="rutInterno" placeholder="12.345.678-9"></div>
+<div class="fg"><label>Cargo:</label><input type="text" id="cargo" placeholder="Ej: Maestro, Supervisor"></div>
+</div>
+<div id="camposExterno" class="hidden">
+<div class="fg"><label>Nombre de la Empresa:</label><input type="text" id="nombreExterno" placeholder="Razón social"></div>
+<div class="fg"><label>RUT Empresa:</label><input type="text" id="rutExterno" placeholder="76.543.210-K"></div>
+<div class="fg"><label>Representante Legal:</label><input type="text" id="representante"></div>
+</div>
+
+<div class="fg"><label>Tipo de Pago:</label>
+<select id="tipoPago"><option value="sueldo">Sueldo Mensual</option><option value="honorarios">Boleta de Honorarios (con retención)</option><option value="factura">Factura de Servicios (+ IVA)</option><option value="boleta">Boleta / otro monto simple</option></select></div>
+<div class="fg"><label id="lblMonto">Sueldo Base Mensual ($):</label><input type="number" id="sueldoBase" inputmode="decimal" placeholder="Ej: 750000"></div>
+<div class="fg"><label>Fecha de Pago:</label><input type="date" id="fecha"></div>
+
+<div id="modSueldo">
+<div class="two">
+<div class="fg"><label>Gratificación mensual ($)</label><input type="number" id="grat" inputmode="decimal" placeholder="0"></div>
+<div class="fg"><label>Colación / movilización no imponible ($)</label><input type="number" id="noImp" inputmode="decimal" placeholder="0"></div>
+<div class="fg"><label>Comisión AFP del trabajador (%)</label><input type="number" id="comision" inputmode="decimal" step="0.01"></div>
+<div class="fg"><label>Seguro de cesantía</label><select id="cesantia"><option value="si">Contrato indefinido (0,6%)</option><option value="no">Plazo fijo / no aplica</option></select></div>
+</div>
+<div class="st">📅 Control de Asistencia del Mes</div>
+<p style="font-size:13px;color:#666;margin-bottom:8px">Toca cada día para cambiar su estado. El calendario usa los días reales del mes de la fecha de pago.</p>
+<div class="ley"><span><i style="background:#d4edda;border:2px solid #28a745"></i>Trabajado</span><span><i style="background:#fff3cd;border:2px solid #ffc107"></i>Licencia médica</span><span><i style="background:#d1ecf1;border:2px solid #17a2b8"></i>Feriado legal</span><span><i style="background:#f8d7da;border:2px solid #dc3545"></i>Ausencia injustificada</span></div>
+<div class="grid" id="calendario"></div>
+<div class="st">⏰ Horas Extras del Mes</div>
+<div class="two">
+<div class="fg"><label>Horas extras (recargo legal 50%)</label><input type="number" id="hxD" inputmode="decimal" min="0" placeholder="0"></div>
+<div class="fg"><label>Horas extras con recargo especial</label><input type="number" id="hxE" inputmode="decimal" min="0" placeholder="0"></div>
+</div>
+</div>
+<div class="calc" id="calcBox"></div>
+
+<div class="st">📋 Validación Documental (Checklist para pagar)</div>
+<div id="vInt">
+<div class="fg"><label>📄 Contrato firmado vigente</label><select id="contrato"></select></div>
+<div class="fg"><label>📄 Cotizaciones AFP al día</label><select id="afp"></select></div>
+<div class="fg"><label>📄 Cotizaciones Fonasa/Isapre al día</label><select id="fonasa"></select></div>
+<div class="fg"><label>📄 Seguro de cesantía (AFC)</label><select id="afc" data-na="1"></select></div>
+<div class="fg"><label>📄 Examen ocupacional vigente</label><select id="examen"></select></div>
+<div class="fg"><label>📄 Cursos de capacitación al día</label><select id="cursos"></select></div>
+<div class="fg"><label>📄 Acta de entrega de EPP firmada (validado por Prevención)</label><select id="epp"></select></div>
+</div>
+<div id="vExt" class="hidden">
+<div class="fg"><label>📄 Contrato de servicios vigente</label><select id="contratoExt"></select></div>
+<div class="fg"><label>📄 Certificado de cotizaciones (AFP, salud, AFC)</label><select id="cotExt"></select></div>
+<div class="fg"><label>📄 Actas de EPP del personal (validado por Prevención)</label><select id="eppExt"></select></div>
+<div class="fg"><label>📄 Permisos de alto riesgo</label><select id="permExt" data-na="1"></select></div>
+<div class="fg"><label>📄 Seguro de accidentes al día</label><select id="segExt"></select></div>
+<div class="fg"><label>📄 Certificado de antecedentes del personal</label><select id="antExt"></select></div>
+</div>
+<button class="bp" onclick="agregarRegistro()">💾 Guardar Registro</button>
+</div>
+
+<div class="card">
+<h2>📊 Estado de Pagos</h2>
+<div id="alertaGeneral"></div>
+<div style="overflow-x:auto"><table><thead><tr><th>Tipo</th><th>Nombre</th><th>RUT</th><th>Monto</th><th>Docs</th><th>Estado</th><th></th></tr></thead><tbody id="tabla"></tbody></table></div>
+<div class="tot" id="totales"></div>
+<button class="bs" onclick="generarReporte()" style="margin-top:12px">📄 Generar Reporte PDF</button>
+<button class="bd" onclick="limpiarTodo()" style="width:100%">🗑️ Limpiar Todo</button>
+<p style="font-size:12px;color:#666;margin-top:10px">Los cálculos son referenciales y no reemplazan la liquidación de sueldo ni la revisión de un contador o asesor laboral.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+/*PURE*/
+const LIM=[13.5,30,50,70,90,120,310],RATE=[0,.04,.08,.135,.23,.304,.35,.40],REB=[0];
+for(let i=1;i<RATE.length;i++)REB[i]=REB[i-1]+LIM[i-1]*(RATE[i]-RATE[i-1]);
+function iusc(base,utm){const b=base/utm;let i=LIM.findIndex(l=>b<=l);if(i<0)i=RATE.length-1;return Math.max(0,Math.round(base*RATE[i]-REB[i]*utm));}
+function retencionAnio(y){const t={2020:10.75,2021:11.5,2022:12.25,2023:13,2024:13.75,2025:14.5,2026:15.25,2027:16};return y>=2028?17:(t[y]||14.5);}
+function calcSueldo(i,P){
+ const sp=Math.round(i.sueldo*(30-Math.min(30,i.dnp))/30);
+ const vh=i.sueldo*7/(30*P.jornada);
+ const xd=Math.round(vh*1.5*i.hxD),xe=Math.round(vh*(1+P.rec/100)*i.hxE);
+ const imp=sp+xd+xe+i.grat;
+ const L=[['Sueldo proporcional ('+(30-Math.min(30,i.dnp))+'/30 días)',sp],['Horas extras (recargo 50%)',xd],['Horas extras (recargo especial)',xe],['Gratificación',i.grat],['TOTAL IMPONIBLE',imp]];
+ const ok=P.utm>0&&P.uf>0&&P.tope>0&&i.com!=null&&!isNaN(i.com);
+ if(!ok)return{lines:L,bruto:imp+i.noImp,liquido:null,sinParams:true,vh:Math.round(vh)};
+ const base=Math.min(imp,Math.round(P.tope*P.uf));
+ const afp=Math.round(base*(0.10+i.com/100)),sal=Math.round(base*0.07),ces=i.ces?Math.round(base*0.006):0;
+ const trib=imp-afp-sal-ces,imp2=iusc(trib,P.utm);
+ const liq=imp-afp-sal-ces-imp2+i.noImp;
+ L.push(['AFP (10% + comisión '+i.com+'%)',-afp],['Salud (7%)',-sal],['Seguro de cesantía',-ces],['Impuesto único 2ª categoría',-imp2],['No imponibles (colación, etc.)',i.noImp],['LÍQUIDO A PAGAR',liq]);
+ return{lines:L,bruto:imp+i.noImp,liquido:liq,sinParams:false,vh:Math.round(vh),tope:base<imp};
+}
+/*END*/
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>(n<0?'-$':'$')+Math.abs(Math.round(n)).toLocaleString('es-CL');
+const num=id=>{const v=parseFloat($(id).value);return isNaN(v)?0:v};
+let registros=JSON.parse(localStorage.getItem('enaco_registros')||'[]');
+let asist={},ultimoCalc=null;
+const PK='enaco_params';
+let P={utm:0,uf:0,tope:0,com:null,jornada:42,rec:50,ret:retencionAnio(new Date().getFullYear()),iva:19,min:0,mes:''};
+try{Object.assign(P,JSON.parse(localStorage.getItem(PK)||'{}'));}catch(e){}
+const PM={pUTM:'utm',pUF:'uf',pTope:'tope',pCom:'com',pJor:'jornada',pRec:'rec',pRet:'ret',pIVA:'iva',pMin:'min'};
+function mesActual(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function initParams(){
+ Object.keys(PM).forEach(id=>{const v=P[PM[id]];$(id).value=(v==null||v===0&&id!=='pMin')?'':v; if(id==='pMin'&&!P.min)$(id).value='';
+  $(id).addEventListener('input',()=>{const x=parseFloat($(id).value);P[PM[id]]=isNaN(x)?(id==='pCom'?null:0):x;P.mes=mesActual();localStorage.setItem(PK,JSON.stringify(P));avisoParams();recalcular();});});
+ avisoParams();
+}
+function avisoParams(){
+ const f=[];if(!(P.utm>0))f.push('UTM');if(!(P.uf>0))f.push('UF');if(!(P.tope>0))f.push('tope imponible');if(P.com==null)f.push('comisión AFP');
+ let h='';
+ if(f.length)h+='<div class="box warn">⚠️ Falta ingresar en Parámetros: '+f.join(', ')+'. Mientras tanto el sueldo se muestra bruto, sin descuentos.</div>';
+ else if(P.mes!==mesActual())h+='<div class="box warn">📅 Tus parámetros son de otro mes ('+esc(P.mes||'sin fecha')+'). Actualiza UTM, UF y tope imponible; cambian cada mes.</div>';
+ if(new Date().getMonth()===0)h+='<div class="box warn">🗓️ Es enero: revisa los cambios anuales (sueldo mínimo, tope imponible, retención de honorarios y tramos de impuesto).</div>';
+ $('avisoParams').innerHTML=h;
+}
+const opts=(s)=>{const na=s.dataset.na;s.innerHTML='<option value="">Selecciona...</option><option value="si">✅ Sí</option><option value="no">❌ No / falta</option>'+(na?'<option value="na">➖ No aplica</option>':'');};
+document.querySelectorAll('#vInt select,#vExt select').forEach(opts);
+
+function diasMes(){const f=$('fecha').value;if(!f)return 30;const [y,m]=f.split('-').map(Number);return new Date(y,m,0).getDate();}
+function generarCalendario(){
+ const c=$('calendario');c.innerHTML='';const n=diasMes();
+ for(let i=1;i<=n;i++){if(!asist[i])asist[i]='trabajado';const d=document.createElement('div');d.className='dia '+asist[i];d.textContent=i;
+  d.onclick=()=>{const e=['trabajado','licencia','feriado','ausencia'];asist[i]=e[(e.indexOf(asist[i])+1)%4];d.className='dia '+asist[i];recalcular();};c.appendChild(d);}
+}
+function conteo(){const n=diasMes(),r={trabajado:0,licencia:0,feriado:0,ausencia:0};for(let i=1;i<=n;i++)r[asist[i]||'trabajado']++;return r;}
+const esSueldo=()=>$('tipoInterno').checked&&$('tipoPago').value==='sueldo';
+function ui(){
+ const int=$('tipoInterno').checked;
+ $('camposInterno').classList.toggle('hidden',!int);$('camposExterno').classList.toggle('hidden',int);
+ $('vInt').classList.toggle('hidden',!int);$('vExt').classList.toggle('hidden',int);
+ if(!int&&$('tipoPago').value==='sueldo')$('tipoPago').value='factura';
+ $('tipoPago').querySelector('option[value="sueldo"]').disabled=!int;
+ $('modSueldo').classList.toggle('hidden',!esSueldo());
+ const t=$('tipoPago').value;
+ $('lblMonto').textContent=t==='sueldo'?'Sueldo Base Mensual ($):':t==='honorarios'?'Monto bruto de la boleta ($):':t==='factura'?'Monto neto de la factura ($):':'Monto a pagar ($):';
+ recalcular();
+}
+function recalcular(){
+ const t=$('tipoPago').value,m=num('sueldoBase'),box=$('calcBox');ultimoCalc=null;
+ if(!m){box.innerHTML='<small>Ingresa el monto para ver el cálculo.</small>';return;}
+ if(esSueldo()){
+  const c=conteo();
+  const i={sueldo:m,dnp:c.ausencia+c.licencia,hxD:num('hxD'),hxE:num('hxE'),grat:num('grat'),noImp:num('noImp'),ces:$('cesantia').value==='si',com:$('comision').value===''?P.com:parseFloat($('comision').value)};
+  const r=calcSueldo(i,P);ultimoCalc=r;
+  let h='<div><span>Días trabajados / feriado / licencia / ausencia</span><b>'+c.trabajado+' / '+c.feriado+' / '+c.licencia+' / '+c.ausencia+'</b></div>';
+  r.lines.forEach((l,k)=>{const f=k===r.lines.length-1||l[0].startsWith('TOTAL');h+='<div class="'+(l[0]==='LÍQUIDO A PAGAR'?'f':'')+'"><span>'+esc(l[0])+'</span><b>'+fmt(l[1])+'</b></div>';});
+  h+='<small>Valor hora ordinaria: '+fmt(r.vh)+' (sueldo × 7 ÷ (30 × jornada de '+P.jornada+' h)).</small>';
+  if(c.licencia)h+='<br><small>Los días de licencia médica no los paga la empresa: los cubre el subsidio de salud/CCAF.</small>';
+  if(r.sinParams)h+='<br><small>⚠️ Sin parámetros del mes no se calculan descuentos ni impuesto: el monto es bruto.</small>';
+  if(r.tope)h+='<br><small>Se aplicó el tope imponible.</small>';
+  if(P.min>0&&m<P.min)h+='<br><small style="color:#c0392b">⚠️ El sueldo base está bajo el mínimo ingresado.</small>';
+  box.innerHTML=h;
+ }else if(t==='honorarios'){
+  const ret=Math.round(m*P.ret/100);ultimoCalc={lines:[['Monto bruto',m],['Retención '+P.ret+'%',-ret],['LÍQUIDO A PAGAR',m-ret]],bruto:m,liquido:m-ret};
+  box.innerHTML=ultimoCalc.lines.map(l=>'<div class="'+(l[0]==='LÍQUIDO A PAGAR'?'f':'')+'"><span>'+esc(l[0])+'</span><b>'+fmt(l[1])+'</b></div>').join('')+'<small>La retención de honorarios sube cada año; confírmala en el SII.</small>';
+ }else if(t==='factura'){
+  const iva=Math.round(m*P.iva/100);ultimoCalc={lines:[['Neto',m],['IVA '+P.iva+'%',iva],['TOTAL A PAGAR',m+iva]],bruto:m,liquido:m+iva};
+  box.innerHTML=ultimoCalc.lines.map(l=>'<div class="'+(l[0]==='TOTAL A PAGAR'?'f':'')+'"><span>'+esc(l[0])+'</span><b>'+fmt(l[1])+'</b></div>').join('');
+ }else{ultimoCalc={lines:[['Monto a pagar',m]],bruto:m,liquido:m};box.innerHTML='<div class="f"><span>Monto a pagar</span><b>'+fmt(m)+'</b></div>';}
+}
+['tipoInterno','tipoExterno'].forEach(id=>$(id).addEventListener('change',ui));
+$('tipoPago').addEventListener('change',ui);
+$('fecha').addEventListener('change',()=>{generarCalendario();recalcular();});
+['sueldoBase','grat','noImp','comision','cesantia','hxD','hxE'].forEach(id=>$(id).addEventListener('input',recalcular));
+
+function agregarRegistro(){
+ const tipo=document.querySelector('input[name="tipo"]:checked').value,tp=$('tipoPago').value,fecha=$('fecha').value;
+ if(!fecha){alert('Completa la fecha de pago');return;}
+ if(!num('sueldoBase')){alert('Ingresa el monto');return;}
+ recalcular();
+ const r={id:Date.now(),tipo,tipoPago:tp,fecha,aprobado:true,documentos:[],calc:ultimoCalc,montoFinal:ultimoCalc?(ultimoCalc.liquido!=null?ultimoCalc.liquido:ultimoCalc.bruto):0,bruto:ultimoCalc&&ultimoCalc.liquido==null};
+ let docs;
+ if(tipo==='interno'){
+  r.nombre=$('nombreInterno').value.trim();r.rut=$('rutInterno').value.trim();r.cargo=$('cargo').value.trim();
+  if(!r.nombre||!r.rut||!r.cargo){alert('Completa nombre, RUT y cargo');return;}
+  docs=[['Contrato','contrato'],['AFP','afp'],['Fonasa/Isapre','fonasa'],['Seguro cesantía','afc'],['Examen ocupacional','examen'],['Cursos','cursos'],['Acta EPP (Prevención)','epp']];
+ }else{
+  r.nombre=$('nombreExterno').value.trim();r.rut=$('rutExterno').value.trim();r.representante=$('representante').value.trim();
+  if(!r.nombre||!r.rut){alert('Completa nombre de empresa y RUT');return;}
+  docs=[['Contrato servicios','contratoExt'],['Cotizaciones','cotExt'],['Actas EPP (Prevención)','eppExt'],['Permisos alto riesgo','permExt'],['Seguro accidentes','segExt'],['Cert. antecedentes','antExt']];
+ }
+ r.documentos=docs.map(d=>({nombre:d[0],estado:$(d[1]).value}));
+ if(r.documentos.some(d=>d.estado===''||d.estado==='no'))r.aprobado=false;
+ registros.push(r);localStorage.setItem('enaco_registros',JSON.stringify(registros));
+ renderizar();limpiarForm();alert('Registro guardado');
+}
+function limpiarForm(){
+ document.querySelectorAll('#formCard input:not([type=radio]),#formCard select').forEach(e=>{if(e.id==='tipoPago')return;e.value=e.id==='cesantia'?'si':'';});
+ asist={};generarCalendario();opts0();recalcular();
+}
+function opts0(){document.querySelectorAll('#vInt select,#vExt select').forEach(s=>s.value='');}
+function eliminarRegistro(id){if(confirm('¿Eliminar este registro?')){registros=registros.filter(r=>r.id!==id);localStorage.setItem('enaco_registros',JSON.stringify(registros));renderizar();}}
+function renderizar(){
+ const tb=$('tabla');tb.innerHTML='';let ap=0,re=0;const al=[];
+ registros.forEach(r=>{
+  const ok=r.documentos.filter(d=>d.estado==='si').length,tot=r.documentos.filter(d=>d.estado!=='na').length;
+  if(r.aprobado)ap+=r.montoFinal;else{re+=r.montoFinal;al.push(esc(r.nombre)+': faltan documentos');}
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td>'+(r.tipo==='interno'?'👷 Interno':'🏢 Subcontrato')+'</td><td>'+esc(r.nombre)+'<br><small>'+esc(r.tipoPago)+'</small></td><td>'+esc(r.rut)+'</td><td>'+fmt(r.montoFinal)+(r.bruto?'<br><small>bruto</small>':'')+'</td><td><span class="badge '+(ok===tot?'ok':'al')+'">'+ok+'/'+tot+'</span></td><td><span class="badge '+(r.aprobado?'ok':'al')+'">'+(r.aprobado?'APROBADO':'RETENIDO')+'</span></td><td><button class="bd" style="padding:5px 10px;font-size:12px" onclick="eliminarRegistro('+r.id+')">Eliminar</button></td>';
+  tb.appendChild(tr);
+ });
+ const a=$('alertaGeneral');
+ if(al.length){a.className='box danger';a.innerHTML='⚠️ <b>'+al.length+' pago(s) RETENIDO(S)</b> — faltan documentos<br><small>'+al.join('<br>')+'</small>';}
+ else if(registros.length){a.className='box ok';a.innerHTML='✅ Todos los pagos tienen documentos completos';}else{a.className='';a.innerHTML='';}
+ $('totales').innerHTML='<div><b>💰 Total APROBADO para pago:</b> '+fmt(ap)+'</div><div><b>🚫 Total RETENIDO:</b> '+fmt(re)+'</div><div><b>📋 Registros:</b> '+registros.length+'</div>';
+}
+function generarReporte(){
+ if(!registros.length){alert('No hay registros');return;}
+ const {jsPDF}=window.jspdf;const d=new jsPDF();let y=20;
+ d.setFontSize(18);d.text('PANEL DE CONTROL ENACO',20,y);d.setFontSize(12);d.text('Reporte de validación documental y pagos (referencial)',20,y+8);d.text('Emitido: '+new Date().toLocaleDateString('es-CL'),20,y+15);d.line(20,y+19,190,y+19);y+=28;
+ const L=(t,x,b)=>{if(y>275){d.addPage();y=20;}d.setFont(undefined,b?'bold':'normal');d.text(String(t),x,y);y+=5;};
+ registros.forEach((r,i)=>{
+  d.setFontSize(12);L((i+1)+'. '+r.nombre+' ('+(r.tipo==='interno'?'Interno':'Subcontrato')+') - '+(r.aprobado?'APROBADO':'RETENIDO'),20,true);
+  d.setFontSize(9);L('RUT '+r.rut+' | Tipo de pago: '+r.tipoPago+' | Fecha: '+r.fecha+' | Monto: '+fmt(r.montoFinal)+(r.bruto?' (bruto)':''),22);
+  if(r.calc)r.calc.lines.forEach(l=>L('   '+l[0]+': '+fmt(l[1]),22));
+  r.documentos.forEach(x=>L('- '+x.nombre+': '+(x.estado==='si'?'OK':x.estado==='no'?'FALTA':x.estado==='na'?'N/A':'SIN REVISAR'),25));
+  y+=4;
+ });
+ const ap=registros.filter(r=>r.aprobado).reduce((s,r)=>s+r.montoFinal,0),re=registros.filter(r=>!r.aprobado).reduce((s,r)=>s+r.montoFinal,0);
+ d.setFontSize(12);L('TOTAL APROBADO: '+fmt(ap),20,true);L('TOTAL RETENIDO: '+fmt(re),20,true);
+ d.save('Panel_Control_ENACO_'+new Date().toISOString().split('T')[0]+'.pdf');
+}
+function limpiarTodo(){if(confirm('¿Eliminar TODOS los registros?')&&confirm('¿Realmente quieres borrar todo?')){registros=[];localStorage.removeItem('enaco_registros');renderizar();}}
+initParams();generarCalendario();ui();renderizar();
+</script>
+</body>
+</html>
