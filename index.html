@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel ENACO</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" href="icono-pequeno.png">
+<style>
+html,body{margin:0;height:100%;background:#0f172a}
+iframe{border:0;width:100%;height:100%;display:block}
+#instalar{display:none;position:fixed;right:12px;bottom:12px;z-index:9;background:#16a34a;color:#fff;border:0;border-radius:24px;padding:12px 18px;font:600 15px sans-serif}
+</style>
+</head>
+<body>
+<iframe src="enaco-panel.html" title="Panel ENACO"></iframe>
+<button id="instalar">Instalar app</button>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+var ev;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();ev=e;document.getElementById('instalar').style.display='block';});
+document.getElementById('instalar').addEventListener('click',function(){if(!ev)return;ev.prompt();ev.userChoice.then(function(){document.getElementById('instalar').style.display='none';ev=null;});});
+</script>
+</body>
+</html>
